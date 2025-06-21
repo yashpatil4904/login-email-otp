@@ -114,15 +114,15 @@ const LoginForm: React.FC = () => {
 
   if (otpSent) {
     return (
-      <div className="w-full max-w-md mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Lock className="w-8 h-8 text-blue-600" />
+      <div className="w-full max-w-sm sm:max-w-md mx-auto px-4 sm:px-0">
+        <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Lock className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Enter Verification Code</h2>
-            <p className="text-gray-600">
-              We've sent a 6-digit code to <span className="font-semibold">{email}</span>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Enter Verification Code</h2>
+            <p className="text-sm sm:text-base text-gray-600">
+              We've sent a 6-digit code to <span className="font-semibold break-all">{email}</span>
             </p>
           </div>
 
@@ -157,10 +157,10 @@ const LoginForm: React.FC = () => {
             )}
           </button>
 
-          <div className="flex items-center justify-between text-sm">
+          <div className="flex flex-col sm:flex-row items-center justify-between text-sm gap-3 sm:gap-0">
             <button
               onClick={goBackToEmail}
-              className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
+              className="flex items-center text-gray-600 hover:text-gray-800 transition-colors w-full sm:w-auto justify-center sm:justify-start"
             >
               <ArrowLeft className="w-4 h-4 mr-1" />
               Back to Email
@@ -169,7 +169,7 @@ const LoginForm: React.FC = () => {
             <button
               onClick={handleResendOtp}
               disabled={isSendingOtp}
-              className="text-blue-600 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="text-blue-600 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors w-full sm:w-auto text-center"
             >
               {isSendingOtp ? 'Sending...' : 'Resend Code'}
             </button>
@@ -186,14 +186,14 @@ const LoginForm: React.FC = () => {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <div className="bg-white rounded-2xl shadow-xl p-8">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Mail className="w-8 h-8 text-blue-600" />
+    <div className="w-full max-w-sm sm:max-w-md mx-auto px-4 sm:px-0">
+      <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Mail className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Login with Email</h2>
-          <p className="text-gray-600">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Login with Email</h2>
+          <p className="text-sm sm:text-base text-gray-600">
             Enter your email address to receive a secure verification code
           </p>
         </div>
@@ -210,7 +210,7 @@ const LoginForm: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-base"
                 required
               />
             </div>

@@ -81,7 +81,7 @@ const OtpInput: React.FC<OtpInputProps> = ({
   };
 
   return (
-    <div className="flex gap-3 justify-center mb-6">
+    <div className="flex gap-2 sm:gap-3 justify-center mb-6 px-2">
       {Array.from({ length }, (_, index) => (
         <input
           key={index}
@@ -95,7 +95,7 @@ const OtpInput: React.FC<OtpInputProps> = ({
           onKeyDown={(e) => handleKeyDown(index, e)}
           onPaste={handlePaste}
           disabled={disabled}
-          className="w-12 h-12 text-center text-xl font-semibold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-10 h-10 sm:w-12 sm:h-12 text-center text-lg sm:text-xl font-semibold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
           autoFocus={index === 0}
         />
       ))}
