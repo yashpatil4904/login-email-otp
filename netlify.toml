@@ -1,6 +1,6 @@
 [build]
   publish = "dist"
-  command = "VITE_BACKEND_URL=$VITE_BACKEND_URL npm run build"
+  command = "echo VITE_BACKEND_URL=$VITE_BACKEND_URL > .env && npm run build"
 
 [build.environment]
   NODE_VERSION = "18"
