@@ -146,6 +146,7 @@ netlify dev
      - `EMAIL_USER`
      - `EMAIL_PASS`
      - `JWT_SECRET`
+     - `VITE_BACKEND_URL`
 
 4. **Deploy!**
    - Netlify will automatically build and deploy your site
