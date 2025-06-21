@@ -1,165 +1,142 @@
 import React, { useState } from 'react';
-import { Mail, ArrowRight, Shield, Clock } from 'lucide-react';
-import { authApi } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import { LoadingSpinner } from './LoadingSpinner';
-import { OtpInput } from './OtpInput';
+import { Mail, Lock, ArrowRight, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
+import OtpInput from './OtpInput';
 
-type Step = 'email' | 'otp';
-
-export function LoginForm() {
-  const [step, setStep] = useState<Step>('email');
+const LoginForm: React.FC = () => {
+  const { login, verifyOtp } = useAuth();
   const [email, setEmail] = useState('');
+  const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [countdown, setCountdown] = useState(0);
-  const { login } = useAuth();
+  const [otpSent, setOtpSent] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setIsLoading(true);
+    
+    if (!email) {
+      toast.error('Please enter your email address');
+      return;
+    }
 
-    try {
-      const response = await authApi.sendOtp(email);
-      setStep('otp');
-      setCountdown(60);
-      
-      // Start countdown
-      const timer = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            return 0;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error('Please enter a valid email address');
+      return;
           }
-          return prev - 1;
-        });
-      }, 1000);
 
+    setIsSendingOtp(true);
+    
+    try {
+      await login(email);
+      setOtpSent(true);
       toast.success('OTP sent to your email!');
-      
-      // Development OTP display removed for production
-    } catch (err) {
-      const errorMessage = (err instanceof Error && err.message) 
-        ? err.message 
-        : 'Failed to connect to authentication service. Please try again.';
-      setError(errorMessage);
-      toast.error(errorMessage);
+    } catch (error: any) {
+      console.error('Error sending OTP:', error);
+      toast.error(error.message || 'Failed to send OTP');
     } finally {
-      setIsLoading(false);
+      setIsSendingOtp(false);
     }
   };
 
-  const handleVerifyOtp = async (otp: string) => {
-    setError('');
+  const handleVerifyOtp = async () => {
+    if (!otp || otp.length !== 6) {
+      toast.error('Please enter the 6-digit OTP');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const response = await authApi.verifyOtp(email, otp);
-      login(response.token, response.user);
+      await verifyOtp(email, otp);
       toast.success('Login successful!');
-    } catch (err) {
-      const errorMessage = (err instanceof Error && err.message) 
-        ? err.message 
-        : 'Failed to connect to authentication service. Please try again.';
-      setError(errorMessage);
-      toast.error(errorMessage);
+    } catch (error: any) {
+      console.error('Error verifying OTP:', error);
+      toast.error(error.message || 'Failed to verify OTP');
+      setOtp('');
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleResendOtp = async () => {
-    if (countdown > 0) return;
-    
-    setError('');
-    setIsLoading(true);
+    setIsSendingOtp(true);
 
     try {
-      const response = await authApi.sendOtp(email);
-      setCountdown(60);
-      
-      const timer = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
+      await login(email);
       toast.success('New OTP sent!');
-      
-      // Development OTP display removed for production
-    } catch (err) {
-      const errorMessage = (err instanceof Error && err.message) 
-        ? err.message 
-        : 'Failed to connect to authentication service. Please try again.';
-      setError(errorMessage);
-      toast.error(errorMessage);
+      setOtp('');
+    } catch (error: any) {
+      console.error('Error resending OTP:', error);
+      toast.error(error.message || 'Failed to resend OTP');
     } finally {
-      setIsLoading(false);
+      setIsSendingOtp(false);
     }
   };
 
-  if (step === 'email') {
+  const goBackToEmail = () => {
+    setOtpSent(false);
+    setOtp('');
+  };
+
+  if (otpSent) {
     return (
       <div className="w-full max-w-md mx-auto">
-        <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 p-8">
+        <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Shield className="w-8 h-8 text-white" />
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Lock className="w-8 h-8 text-blue-600" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-            <p className="text-gray-600">Enter your email to receive a secure login code</p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Enter Verification Code</h2>
+            <p className="text-gray-600">
+              We've sent a 6-digit code to <span className="font-semibold">{email}</span>
+            </p>
           </div>
 
-          <form onSubmit={handleSendOtp} className="space-y-6">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  placeholder="Enter your email"
-                  required
+          <OtpInput
+            value={otp}
+            onChange={setOtp}
+            onComplete={handleVerifyOtp}
                   disabled={isLoading}
                 />
-              </div>
-            </div>
 
-            {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-600">{error}</p>
+          <button
+            onClick={handleVerifyOtp}
+            disabled={isLoading || otp.length !== 6}
+            className="w-full bg-blue-600 text-white py-3 px-4 rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 mb-4"
+          >
+            {isLoading ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                Verifying...
               </div>
+            ) : (
+              'Verify & Login'
             )}
+          </button>
+
+          <div className="flex items-center justify-between text-sm">
+            <button
+              onClick={goBackToEmail}
+              className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4 mr-1" />
+              Back to Email
+            </button>
 
             <button
-              type="submit"
-              disabled={isLoading || !email}
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
+              onClick={handleResendOtp}
+              disabled={isSendingOtp}
+              className="text-blue-600 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {isLoading ? (
-                <LoadingSpinner size="sm" className="text-white" />
-              ) : (
-                <>
-                  Send Login Code
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
+              {isSendingOtp ? 'Sending...' : 'Resend Code'}
             </button>
-          </form>
+          </div>
 
-          <div className="mt-6 text-center text-sm text-gray-500">
-            We'll send a 6-digit code to your email for secure authentication
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+            <p className="text-xs text-gray-600 text-center">
+              💡 <strong>Development Mode:</strong> Check the server console for the OTP code
+            </p>
           </div>
         </div>
       </div>
@@ -168,69 +145,62 @@ export function LoginForm() {
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 p-8">
+      <div className="bg-white rounded-2xl shadow-xl p-8">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Mail className="w-8 h-8 text-white" />
+          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Mail className="w-8 h-8 text-blue-600" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Check Your Email</h1>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Login with Email</h2>
           <p className="text-gray-600">
-            We've sent a 6-digit code to<br />
-            <span className="font-medium text-gray-900">{email}</span>
+            Enter your email address to receive a secure verification code
           </p>
         </div>
 
-        <div className="space-y-6">
+        <form onSubmit={handleSendOtp} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-4 text-center">
-              Enter Verification Code
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              Email Address
             </label>
-            <OtpInput
-              length={6}
-              onComplete={handleVerifyOtp}
-              disabled={isLoading}
-              error={!!error}
-            />
-          </div>
-
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600 text-center">{error}</p>
+            <div className="relative">
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                required
+              />
             </div>
-          )}
-
-          <div className="text-center">
-            <button
-              onClick={handleResendOtp}
-              disabled={countdown > 0 || isLoading}
-              className="text-sm text-blue-600 hover:text-blue-700 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
-            >
-              {countdown > 0 ? (
-                <span className="flex items-center justify-center gap-1">
-                  <Clock className="w-4 h-4" />
-                  Resend code in {countdown}s
-                </span>
-              ) : (
-                'Resend verification code'
-              )}
-            </button>
           </div>
 
           <button
-            onClick={() => setStep('email')}
-            disabled={isLoading}
-            className="w-full text-gray-600 hover:text-gray-700 py-2 text-sm transition-colors"
+            type="submit"
+            disabled={isSendingOtp}
+            className="w-full bg-blue-600 text-white py-3 px-4 rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center"
           >
-            Use different email address
+            {isSendingOtp ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                Sending OTP...
+              </>
+            ) : (
+              <>
+                Send Verification Code
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </>
+            )}
           </button>
-        </div>
+        </form>
 
-        {isLoading && (
-          <div className="mt-4 flex justify-center">
-            <LoadingSpinner size="sm" />
-          </div>
-        )}
+        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+          <p className="text-xs text-blue-800 text-center">
+            🔒 Your email will only be used for secure authentication
+          </p>
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default LoginForm;

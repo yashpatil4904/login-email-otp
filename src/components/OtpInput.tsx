@@ -1,98 +1,106 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 
 interface OtpInputProps {
-  length: number;
-  onComplete: (otp: string) => void;
+  value: string;
+  onChange: (value: string) => void;
+  onComplete?: (value: string) => void;
   disabled?: boolean;
-  error?: boolean;
+  length?: number;
 }
 
-export function OtpInput({ length, onComplete, disabled = false, error = false }: OtpInputProps) {
-  const [otp, setOtp] = useState<string[]>(new Array(length).fill(''));
+const OtpInput: React.FC<OtpInputProps> = ({
+  value,
+  onChange,
+  onComplete,
+  disabled = false,
+  length = 6
+}) => {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
-    if (inputRefs.current[0]) {
-      inputRefs.current[0].focus();
-    }
-  }, []);
+    // Initialize refs array
+    inputRefs.current = inputRefs.current.slice(0, length);
+  }, [length]);
 
-  const handleChange = (index: number, value: string) => {
+  const handleChange = (index: number, digit: string) => {
     if (disabled) return;
 
-    const newOtp = [...otp];
+    // Only allow digits
+    if (!/^\d*$/.test(digit)) return;
+
+    const newValue = value.split('');
+    newValue[index] = digit;
+    const newOtp = newValue.join('');
     
-    // Handle paste
-    if (value.length > 1) {
-      const pastedValue = value.slice(0, length);
-      for (let i = 0; i < length; i++) {
-        newOtp[i] = pastedValue[i] || '';
-      }
-      setOtp(newOtp);
-      
-      // Focus on the last filled input or next empty input
-      const lastFilledIndex = Math.min(pastedValue.length - 1, length - 1);
-      if (inputRefs.current[lastFilledIndex]) {
-        inputRefs.current[lastFilledIndex].focus();
-      }
-      
-      if (pastedValue.length === length) {
-        onComplete(pastedValue);
-      }
-      return;
-    }
+    onChange(newOtp);
 
-    // Handle single character input
-    if (/^\d$/.test(value) || value === '') {
-      newOtp[index] = value;
-      setOtp(newOtp);
-
-      // Move to next input
-      if (value && index < length - 1) {
+    // Auto-focus next input
+    if (digit && index < length - 1) {
         inputRefs.current[index + 1]?.focus();
       }
 
-      // Call onComplete when all fields are filled
-      if (newOtp.every(digit => digit !== '') && newOtp.join('').length === length) {
-        onComplete(newOtp.join(''));
-      }
+    // Call onComplete when all digits are entered
+    if (newOtp.length === length && onComplete) {
+      onComplete(newOtp);
     }
   };
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
     if (disabled) return;
 
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+    if (e.key === 'Backspace') {
+      if (value[index]) {
+        // Clear current digit
+        const newValue = value.split('');
+        newValue[index] = '';
+        onChange(newValue.join(''));
+      } else if (index > 0) {
+        // Move to previous input
+        inputRefs.current[index - 1]?.focus();
+      }
+    } else if (e.key === 'ArrowLeft' && index > 0) {
       inputRefs.current[index - 1]?.focus();
+    } else if (e.key === 'ArrowRight' && index < length - 1) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    if (disabled) return;
+
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text/plain').replace(/\D/g, '');
+    
+    if (pastedData.length <= length) {
+      onChange(pastedData.padEnd(length, ''));
+      
+      // Focus the next empty input or the last input
+      const nextIndex = Math.min(pastedData.length, length - 1);
+      inputRefs.current[nextIndex]?.focus();
     }
   };
 
   return (
-    <div className="flex gap-3 justify-center">
-      {otp.map((digit, index) => (
+    <div className="flex gap-3 justify-center mb-6">
+      {Array.from({ length }, (_, index) => (
         <input
           key={index}
-          ref={(el) => {
-            inputRefs.current[index] = el;
-          }}
+          ref={(el) => (inputRefs.current[index] = el)}
           type="text"
           inputMode="numeric"
+          pattern="[0-9]*"
           maxLength={1}
-          value={digit}
+          value={value[index] || ''}
           onChange={(e) => handleChange(index, e.target.value)}
           onKeyDown={(e) => handleKeyDown(index, e)}
+          onPaste={handlePaste}
           disabled={disabled}
-          className={`
-            w-12 h-12 text-center text-xl font-semibold border-2 rounded-lg
-            transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500
-            ${error 
-              ? 'border-red-300 bg-red-50 text-red-900' 
-              : 'border-gray-300 bg-white text-gray-900 focus:border-blue-500'
-            }
-            ${disabled ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'hover:border-gray-400'}
-          `}
+          className="w-12 h-12 text-center text-xl font-semibold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          autoFocus={index === 0}
         />
       ))}
     </div>
   );
-}
+};
+
+export default OtpInput;

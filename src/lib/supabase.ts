@@ -21,24 +21,24 @@ export const authApi = {
       // Call our backend server with Nodemailer
       console.log('📡 Calling backend server...');
       const response = await fetch(`${BACKEND_URL}/api/send-otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    });
 
       console.log('📡 Backend response status:', response.status);
 
       if (response.ok) {
-        const data = await response.json();
+    const data = await response.json();
         console.log('✅ Backend successful:', data);
         return data;
       } else {
         const errorData = await response.json();
         console.log('❌ Backend failed:', errorData);
         throw new Error(errorData.error || 'Failed to send OTP');
-      }
+    }
     } catch (error) {
       console.error('❌ Error calling backend:', error);
       throw new Error('Failed to connect to email service. Please try again.');
@@ -55,25 +55,25 @@ export const authApi = {
       console.log('📡 Request payload:', { email, otp });
       
       const response = await fetch(`${BACKEND_URL}/api/verify-otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, otp }),
-      });
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, otp }),
+    });
 
       console.log('📡 Backend verification response status:', response.status);
       console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
 
       if (response.ok) {
-        const data = await response.json();
+    const data = await response.json();
         console.log('✅ Backend verification successful:', data);
         return data;
       } else {
         const errorData = await response.json();
         console.log('❌ Backend verification failed:', errorData);
         throw new Error(errorData.error || 'Failed to verify OTP');
-      }
+    }
     } catch (error) {
       console.error('❌ Error calling backend for verification:', error);
       console.error('❌ Error details:', {
