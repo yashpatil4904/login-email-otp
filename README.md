@@ -1,4 +1,5 @@
-# Email OTP Authentication System (https://login-email-otp.netlify.app/)
+# Email OTP Authentication System 
+Link : https://login-email-otp.netlify.app/
 
 A modern, full-stack authentication system using React, TypeScript, Vite, Supabase, Node.js/Express, and Nodemailer. Users log in with their email and a One-Time Password (OTP) sent to their inbox. The backend securely manages OTPs, user sessions, and issues JWT tokens for protected routes.
 
