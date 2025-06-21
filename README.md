@@ -157,6 +157,11 @@ npm run dev
 - **users**: Stores user emails, creation time, and last login
 - **sessions**: Stores OTP codes, expiration, status, and creation time for each login attempt
 
+USERS TABLE
+![image](https://github.com/user-attachments/assets/625104ac-29c1-41e7-b6c4-f9a3e2df88c5)
+
+SESSIONS TABLE
+![image](https://github.com/user-attachments/assets/649f5a7a-e2d2-4274-ab0f-0137b7d6b9ac)
 ---
 
 ## 💡 Technology Choices
