@@ -37,6 +37,7 @@ project/
   │   └── ...
   ├── supabase/           # Supabase migrations and edge functions (if any)
   ├── package.json        # Frontend dependencies
+  ├── netlify.toml        # Netlify deployment configuration
   ├── README.md           # This file
   └── ...
 ```
@@ -96,6 +97,49 @@ npm run dev
 
 ---
 
+## 🚀 Deployment
+
+### **Backend Deployment (Render/Railway/Heroku)**
+
+1. **Deploy to Render:**
+   - Connect your GitHub repository to Render
+   - Create a new Web Service
+   - Set build command: `npm install`
+   - Set start command: `npm start`
+   - Add environment variables from your `.env` file
+   - Deploy!
+
+2. **Deploy to Railway:**
+   - Connect your repository to Railway
+   - Set the root directory to `server/`
+   - Add environment variables
+   - Deploy!
+
+### **Frontend Deployment (Netlify)**
+
+1. **Connect to Netlify:**
+   - Go to [Netlify](https://netlify.com) and sign up/login
+   - Click "New site from Git"
+   - Connect your GitHub repository
+
+2. **Configure Build Settings:**
+   - Build command: `npm run build`
+   - Publish directory: `dist`
+   - Node version: `18`
+
+3. **Add Environment Variables:**
+   - Go to Site settings > Environment variables
+   - Add:
+     - `VITE_SUPABASE_URL`
+     - `VITE_SUPABASE_ANON_KEY`
+     - `VITE_BACKEND_URL` (your deployed backend URL)
+
+4. **Deploy!**
+   - Netlify will automatically build and deploy your site
+   - Your site will be available at `https://your-site-name.netlify.app`
+
+---
+
 ## 🧩 How It Works
 
 ### **Frontend (React + Vite)**
@@ -132,7 +176,8 @@ npm run dev
 - For production, use strong secrets and environment variables
 - You can use any SMTP provider, not just Gmail
 - Make sure your system clock is correct for OTP expiration
-- For deployment, use services like Vercel/Netlify (frontend) and Render/Heroku (backend)
+- The backend must be deployed before the frontend
+- Update `VITE_BACKEND_URL` in Netlify environment variables after backend deployment
 
 ---
 
