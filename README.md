@@ -110,11 +110,7 @@ npm run dev
    - Add environment variables from your `.env` file
    - Deploy!
 
-2. **Deploy to Railway:**
-   - Connect your repository to Railway
-   - Set the root directory to `server/`
-   - Add environment variables
-   - Deploy!
+
 
 ### **Frontend Deployment (Netlify)**
 
