@@ -181,5 +181,3 @@ npm run dev
 
 ---
 
-## 📬 Need Help?
-Open an issue or contact the maintainer for support! 
