@@ -297,4 +297,3 @@ curl -X POST https://your-site.netlify.app/.netlify/functions/cleanup-expired
 
 ---
 
-**Happy coding! 🚀** 
