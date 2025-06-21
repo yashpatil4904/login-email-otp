@@ -5,17 +5,17 @@ DROP TABLE IF EXISTS users CASCADE;
 -- Users table (simplified as requested)
 CREATE TABLE users (
   email TEXT PRIMARY KEY,
-  created_at TIMESTAMP DEFAULT now(),
-  last_login TIMESTAMP
+  created_at TIMESTAMPTZ DEFAULT now(),
+  last_login TIMESTAMPTZ
 );
 
 -- Sessions table (simplified as requested)
 CREATE TABLE sessions (
   email TEXT NOT NULL,
   otp_code TEXT NOT NULL,
-  expiration_time TIMESTAMP NOT NULL,
+  expiration_time TIMESTAMPTZ NOT NULL,
   status TEXT DEFAULT 'active' CHECK (status IN ('active', 'expired', 'used')),
-  created_at TIMESTAMP DEFAULT now()
+  created_at TIMESTAMPTZ DEFAULT now()
 );
 
 -- Create indexes for performance

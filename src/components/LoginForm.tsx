@@ -11,6 +11,7 @@ const LoginForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +24,7 @@ const LoginForm: React.FC = () => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       toast.error('Please enter a valid email address');
       return;
-          }
+    }
 
     setIsSendingOtp(true);
     
@@ -40,9 +41,11 @@ const LoginForm: React.FC = () => {
   };
 
   const handleVerifyOtp = async () => {
+    // Only set attempted submit if user actually clicked the button
+    setHasAttemptedSubmit(true);
+    
     if (!otp || otp.length !== 6) {
-      toast.error('Please enter the 6-digit OTP');
-      return;
+      return; // Don't show toast, just return
     }
 
     setIsLoading(true);
@@ -54,8 +57,28 @@ const LoginForm: React.FC = () => {
       console.error('Error verifying OTP:', error);
       toast.error(error.message || 'Failed to verify OTP');
       setOtp('');
+      setHasAttemptedSubmit(false);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleOtpComplete = async (value: string) => {
+    // Auto-verify when all 6 digits are entered
+    if (value.length === 6) {
+      setOtp(value);
+      setIsLoading(true);
+
+      try {
+        await verifyOtp(email, value);
+        toast.success('Login successful!');
+      } catch (error: any) {
+        console.error('Error verifying OTP:', error);
+        toast.error(error.message || 'Failed to verify OTP');
+        setOtp('');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -66,6 +89,7 @@ const LoginForm: React.FC = () => {
       await login(email);
       toast.success('New OTP sent!');
       setOtp('');
+      setHasAttemptedSubmit(false);
     } catch (error: any) {
       console.error('Error resending OTP:', error);
       toast.error(error.message || 'Failed to resend OTP');
@@ -77,6 +101,15 @@ const LoginForm: React.FC = () => {
   const goBackToEmail = () => {
     setOtpSent(false);
     setOtp('');
+    setHasAttemptedSubmit(false);
+  };
+
+  const handleOtpChange = (value: string) => {
+    setOtp(value);
+    // Clear the attempted submit flag when user starts typing again
+    if (hasAttemptedSubmit && value.length > 0) {
+      setHasAttemptedSubmit(false);
+    }
   };
 
   if (otpSent) {
@@ -95,10 +128,19 @@ const LoginForm: React.FC = () => {
 
           <OtpInput
             value={otp}
-            onChange={setOtp}
-            onComplete={handleVerifyOtp}
-                  disabled={isLoading}
-                />
+            onChange={handleOtpChange}
+            onComplete={handleOtpComplete}
+            disabled={isLoading}
+          />
+
+          {/* Show warning only if user has attempted to submit with incomplete OTP */}
+          {hasAttemptedSubmit && otp.length > 0 && otp.length < 6 && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-600 text-center">
+                Please enter all 6 digits of the OTP
+              </p>
+            </div>
+          )}
 
           <button
             onClick={handleVerifyOtp}
